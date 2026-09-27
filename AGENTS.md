@@ -107,3 +107,59 @@ git diff -U0 | grep -E '^\+[^+]' | grep -E '(^|[[:space:]])#|//|/\*|<!--'
 
 The command reports every added line that holds comment syntax. It also reports false matches,
 such as a URL or a string. Read each match. Delete every match that is a comment.
+
+## Rule 7 — Never write a test
+
+Do not write a test in this repository. Do not create a test file. Do not add a test case to a
+file that already exists.
+
+This rule has no exception. A resource that is hard to understand does not earn a test. A defect
+that you repaired does not earn a test. A request to "make sure it works" does not ask you for a
+test.
+
+## Rule 8 — What counts as a test
+
+The ban covers every automated check, under every name.
+
+| Form | Banned examples |
+|---|---|
+| Terraform test | `*.tftest.hcl`, and the `terraform test` command |
+| Go test | `*_test.go`, and Terratest |
+| Cloud Development Kit (CDK) or Pulumi test | `*.test.ts`, `*.spec.ts`, a Pytest file, a template assertion |
+| Test function | `describe`, `it`, `test`, `run` blocks, `assert` blocks |
+| Test double | a mock provider, a fake backend, or a fixture that exists for a test only |
+| Test resource | a resource, a module, or a workspace that exists to prove another resource works |
+| Runner configuration | a test stage in a pipeline file, `jest.config.*`, `vitest.config.*`, a `test` target in a Makefile |
+
+## Rule 9 — A linter and a scanner are not tests
+
+These tools stay, and Rule 3 permits their suppression directives.
+
+- `terraform validate` and `terraform fmt`
+- `terraform plan`
+- `tflint`
+- `tfsec` and `checkov`
+- `yamllint`
+
+Each one reads the code as it is. None of them builds a second copy of the system to check the
+first one. That difference is what Rule 7 bans.
+
+## Rule 10 — What to do instead of a test
+
+Read the configuration and make it correct. Then report two things to the user.
+
+1. What you changed.
+2. What you did not verify.
+
+Write the second part plainly. "I did not apply this against a real account" is a correct report.
+Name each limit of what you observed. Never report a result that you did not see.
+
+## Rule 11 — Check your work before you report it
+
+Run this command before you report the work as complete.
+
+```bash
+git status --porcelain | grep -E '\.tftest\.hcl$|_test\.go$|\.(spec|test)\.(ts|js|py)$|__tests__'
+```
+
+The command must print nothing. One line of output means you broke Rule 7. Delete that file.
